@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // Capture the Activity BEFORE setContent. The button needs it to build an Intent.
-        val activity = this
+        val activity = thisg
         setContent {
             KampusGoTheme {
 // Holds the typed text while this screen is open. A redraw keeps it. Rotation still runs onCreate again.
@@ -59,6 +59,13 @@ class MainActivity : ComponentActivity() {
                             activity.startActivity(intent)
                         }) {
                             Text("Open profile")
+                        }
+                        Button(onClick = {
+// Explicit Intent. This opens the XML activity, not ProfileActivity.
+                            val intent = Intent(activity, ProfileXmlActivity::class.java)
+                            activity.startActivity(intent)
+                        }) {
+                            Text("XML form")
                         }
                     }
                 }
