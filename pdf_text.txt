@@ -1,0 +1,234 @@
+--- PAGE 1 ---
+Native Mobile Development  ·  Lab 05  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+SWISS GERMAN UNIVERSITY  ·  Faculty of Engineering and Information Technology 
+NATIVE MOBILE DEVELOPMENT  —  LAB 
+Lab 05  ·  Compose State 
+Week 5  ·  2 hours  ·  Checkoff at the end of this lab 
+Project KampusGo stays the submitted app. The codelab app is for in class practice only. 
+In class Intro to state in Compose (Tip Time). Stop when that codelab ends. 
+Checkoff The Lab 04 fields, rebuilt in Compose, on the launcher screen. 
+Save Enabled only when the name is not blank and the email contains @.  
+XML ProfileXmlActivity may stay. It is no longer the screen you open the app with.  
+ 
+1.  What changed 
+Lab 04 described the form in XML and found the boxes with findViewById. This lab describes the same fields 
+as composable functions. The text is state. When the state changes, Compose draws the screen again. You do 
+not write a TextWatcher. 
+From this week, new screens are Compose. MainActivity stays the launcher. The form is what the user sees 
+first. 
+2.  Codelab, in a different project 
+Open https://developer.android.com/codelabs/basic-android-kotlin-compose-using-state 
+1. Download the starter when the page tells you to. Create that project beside KampusGo. Do not copy its 
+files into KampusGo. 
+2. Finish Intro to state in Compose. The tip amount must update as you type, and EditNumberField must end 
+up stateless: the caller holds the text. 
+3. Stop at the end of that codelab. Do not start Calculate a custom tip. 
+4. You do not need to submit the tip app. Once the tip can update as you type, you can finish the codelab 
+and start working on KampusGo. 
+3.  Create the file 
+5. Open KampusGo. Right-click the same folder as MainActivity. 
+6. New → Kotlin Class/File. Name: ProfileForm. Kind: File. 
+7. Section 4 fills that file one block at a time. The package line must match MainActivity. 
+4.  Build the form one block at a time 
+Add the blocks below in order. Block 4.3's Column is the body of ProfileForm. Blocks 4.4 and 4.5 go inside that 
+Column. 
+4.1  A field that does not store the text 
+Where: ProfileForm.kt, under the imports. This function is the whole file so far. 
+LabeledField draws one box. It does not remember the letters. The caller passes the current text and a 
+function that runs when the user types. That is the same split you made when EditNumberField stopped 
+owning amountInput. 
+// guided by Android Basics codelab: Intro to state in Compose. 
+package com.sgu.kampusgo 
+  
+--- PAGE 2 ---
+Native Mobile Development  ·  Lab 05  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+import android.widget.Toast 
+import androidx.compose.foundation.layout.Column 
+import androidx.compose.foundation.layout.Row 
+import androidx.compose.foundation.layout.fillMaxWidth 
+import androidx.compose.foundation.layout.padding 
+import androidx.compose.material3.Button 
+import androidx.compose.material3.OutlinedTextField 
+import androidx.compose.material3.RadioButton 
+import androidx.compose.material3.Text 
+import androidx.compose.runtime.Composable 
+import androidx.compose.runtime.getValue 
+import androidx.compose.runtime.mutableStateOf 
+import androidx.compose.runtime.remember 
+import androidx.compose.runtime.setValue 
+import androidx.compose.ui.Alignment 
+import androidx.compose.ui.Modifier 
+import androidx.compose.ui.platform.LocalContext 
+import androidx.compose.ui.tooling.preview.Preview 
+import androidx.compose.ui.unit.dp 
+import com.sgu.kampusgo.ui.theme.KampusGoTheme 
+  
+private val majors = listOf( 
+    "Informatics", 
+    "Information Systems", 
+    "Computer Engineering", 
+) 
+  
+@Composable 
+fun LabeledField( 
+    value: String, 
+    onValueChange: (String) -> Unit, 
+    label: String, 
+    isError: Boolean = false, 
+    supportingText: String? = null, 
+    modifier: Modifier = Modifier, 
+) { 
+    OutlinedTextField( 
+        value = value, 
+        onValueChange = onValueChange, 
+        label = { Text(label) }, 
+        isError = isError, 
+        supportingText = { 
+            if (supportingText != null) Text(supportingText) 
+        }, 
+        modifier = modifier.fillMaxWidth(), 
+    ) 
+} 
+4.2  The five remembered values 
+Where: under LabeledField, still in ProfileForm.kt. 
+Remember keeps each string while this screen is open. A redraw reads the same string. Rotating the phone 
+still runs onCreate again, so these values go back to empty. emailError and valid are not stored. They are 
+calculated from the strings every time the screen redraws. 
+@Composable 
+fun ProfileForm(modifier: Modifier = Modifier) { 
+    var name by remember { mutableStateOf("") } 
+    <-- the rest of the fields here --> 
+--- PAGE 3 ---
+Native Mobile Development  ·  Lab 05  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+    val emailError = email.isNotEmpty() && !email.contains("@") 
+    val valid = name.isNotBlank() && email.contains("@") 
+    val context = LocalContext.current 
+} 
+ 
+Finish the remaining fields: 
+• npm 
+• email 
+• major [ use mutableStateOf(majors.first()) ] 
+• angkatan 
+ 
+4.3  Name, NPM, and email 
+Where: inside ProfileForm, before its closing brace. 
+Each LabeledField shows one remembered string. onValueChange writes the new text back, which makes 
+Compose draw the box again. The email message appears while the user types. An empty email shows no 
+message. An email with no @ shows Email needs @. 
+Column(modifier = modifier) { 
+    Text("KampusGo") 
+    LabeledField(value = name, onValueChange = { name = it }, label = "Name") 
+    <-- the rest of the labeledFields here --> 
+    ) 
+} 
+ 
+Finish the remaining fields: 
+• npm 
+• email (add isError = emailError and supportingText = if (emailError) "Email needs @" else 
+null,) 
+4.4  Major 
+Where: inside the Column, after the email field, before the Column's closing brace. 
+major is one string. The selected radio is the row whose text equals that string. Tapping a row writes a new 
+string. This replaces the Spinner from Lab 04. The three names are the same list. 
+Text("Major", modifier = Modifier.padding(top = 12.dp)) 
+majors.forEach { option -> 
+    Row(verticalAlignment = Alignment.CenterVertically) { 
+        RadioButton(selected = major == option, onClick = { major = option }) 
+        Text(option) 
+    } 
+} 
+<-- insert the LabeledField for angkatan --> 
+ 
+4.5  Save 
+Where: inside the Column, after Angkatan, before the Column's closing brace. 
+enabled = valid is the checkoff. The button is on only when the name is not blank and the email contains @. 
+You do not call isEnabled from a watcher. The Boolean is derived from the state, and Compose redraws the 
+button when that Boolean changes. 
+Button( 
+    onClick = { 
+        Toast.makeText(context, "Saved ($major)", Toast.LENGTH_SHORT).show() 
+    }, 
+--- PAGE 4 ---
+Native Mobile Development  ·  Lab 05  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+    enabled = valid, 
+    modifier = Modifier.padding(top = 16.dp), 
+) { 
+    Text("Save") 
+} 
+4.6  Preview 
+Where: under ProfileForm, after its closing brace. 
+Split the preview. It draws the form with empty fields and Save off, without launching the phone. If the 
+preview is blank, click Build & Refresh in the preview panel. 
+@Preview(showBackground = true) 
+@Composable 
+fun ProfileFormPreview() { 
+    KampusGoTheme { 
+        ProfileForm(modifier = Modifier.padding(24.dp)) 
+    } 
+} 
+5.  Show the form from the launcher 
+Open MainActivity.kt. Keep the class, super.onCreate, enableEdgeToEdge(), and val activity = this. Replace the 
+Scaffold { ... } call with the block below. Delete the old name field and Open profile button. The XML form 
+button stays, under the new form. 
+Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -> 
+    Column( 
+        modifier = Modifier 
+            .padding(innerPadding) 
+            .verticalScroll(rememberScrollState()) 
+    ) { 
+        ProfileForm(modifier = Modifier.padding(24.dp)) 
+        Button(onClick = { 
+            activity.startActivity(Intent(activity, ProfileXmlActivity::class.java)) 
+        }) { 
+            Text("XML form") 
+        } 
+    } 
+} 
+Add the imports Android Studio marks in red: verticalScroll and rememberScrollState, both from 
+androidx.compose.foundation. 
+6.  Run 
+8. Run KampusGo. The form is the first screen. Save starts off. 
+9. Type a name and an email with no @. The email line shows Email needs @, and Save stays off. 
+10. Add @ to the email. The message disappears and Save turns on. Tap it. A Toast shows the major. 
+11. Open the preview of ProfileFormPreview. It shows the form without a phone. 
+12. Tap XML form. The Lab 04 screen still opens. Commit message: Lab 05 Compose form. Push. 
+7.  If something breaks 
+Problem What to try 
+The text box does not keep letters value and onValueChange must be the same 
+remembered string. A local var inside onValueChange is 
+not state. 
+--- PAGE 5 ---
+Native Mobile Development  ·  Lab 05  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+Save is always on enabled = valid must be on the Button. valid must read 
+name and email. 
+Unresolved: rememberScrollState Import 
+androidx.compose.foundation.rememberScrollState and 
+verticalScroll. 
+Preview is empty ProfileFormPreview must call KampusGoTheme { 
+ProfileForm(...) }. Then Build & Refresh. 
+8.  Desk check 
+• The launcher opens this Compose form. No findViewById on this screen. 
+• Save turns on and off while you type, before you tap it. 
+• An email without @ shows a message while you type. 
+• ProfileFormPreview is on the file. 
+• The citation comment is above the package or above LabeledField. 
+9.  Challenge 
+Move the five remember lines out of ProfileForm, into the caller in MainActivity. ProfileForm then takes the 
+strings and the change functions, the same way LabeledField already does. The tip field in the codelab ended 
+in this shape. 
+@Composable 
+fun ProfileForm( 
+    name: String, 
+    onNameChange: (String) -> Unit, 
+    email: String, 
+    onEmailChange: (String) -> Unit, 
+    modifier: Modifier = Modifier, 
+) { 
+    // draw LabeledField(value = name, onValueChange = onNameChange, ...) 
+} 
