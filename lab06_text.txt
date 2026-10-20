@@ -1,0 +1,289 @@
+--- PAGE 1 ---
+Native Mobile Development  ·  Lab 06  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+SWISS GERMAN UNIVERSITY  ·  Faculty of Information Technology 
+NATIVE MOBILE DEVELOPMENT  —  Laboratory 
+Lab 06  ·  Scrollable List 
+Week 6  ·  2 hours  ·  Assignment 2  ·  Tag lab-a2 due at the start of Lab 07 
+In class Affirmations codelab, in a project that is not KampusGo. 
+Assignment 2 Eight campus events in a LazyColumn. A tap opens a detail screen. 
+Data Hardcoded Kotlin. No Retrofit. No internet. 
+Detail An explicit Intent carries the event id. Compose Navigation is next week. 
+Submit Tag lab-a2. LMS: the repo URL. Due at the start of Lab 07. 
+ 
+1.  What a list is this week 
+A LazyColumn builds the rows that are visible and recycles the rest as the user scrolls. The row's key is the 
+event id, so Compose can tell evt-01 from evt-02 after a redraw. A tap must open another screen. 
+2.  Codelab, in a different project 
+Open https://developer.android.com/codelabs/basic-android-kotlin-compose-training-add-scrollable-list 
+1. Download the Affirmations starter when the page tells you to. Keep it out of KampusGo. 
+2. Finish the scrollable list: a data class, a LazyColumn, and one card per row. 
+3. Stop at the end of that codelab. Do not start the navigation codelab. 
+4. The pictures and string resources stay in the Affirmations app. KampusGo uses Event fields. The codelab 
+has no detail screen. Detail is the assignment. 
+3.  The event type 
+In KampusGo, new Kotlin file Events, kind File, same folder as MainActivity. Paste the type below. Then write 
+eight Event(...) calls inside sampleEvents, one per row of the table. The id is the string the list and the detail 
+screen share. Copy evt-01's description in full. That text is what proves the detail screen scrolls. evt-08 is in 
+the past and still belongs on the list. 
+// guided by Android Basics codelab: Add a scrollable list. 
+package com.sgu.kampusgo 
+  
+data class Event( 
+    val id: String, 
+    val title: String, 
+    val category: String, 
+    val venue: String, 
+    val startsAt: String, 
+    val description: String, 
+) 
+  
+val sampleEvents = listOf( 
+    Event( 
+        id = "", 
+        title = "", 
+        category = "", 
+        venue = "", 
+        startsAt = "", 
+        description = "", 
+    ), 
+    Event( 
+        … 
+--- PAGE 2 ---
+Native Mobile Development  ·  Lab 06  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+    ), 
+    Event( 
+        … 
+    ), 
+) 
+Write these eight rows as Event(...) calls. 
+id title category venue startsAt description 
+evt-01 NMD Guest Lecture: 
+Shipping on Play 
+Academic The Gade Campus, 
+Room 5.03 
+2026-10-
+02T13:00:00+07:00 
+A Play Console 
+walkthrough from a 
+former student. Bring 
+a laptop if you want 
+to follow the signing 
+step. This description 
+is intentionally long 
+so your detail screen 
+must scroll instead of 
+clipping the last 
+sentence off the 
+bottom of a phone. 
+evt-02 UKM Programming: 
+Hack night 
+UKM Lab C 2026-09-
+18T18:30:00+07:00 
+Bring a charger. 
+Snacks from Kantin 
+Lt. 1. 
+evt-03 OSIS Town Hall Student org Auditorium 2026-09-
+21T16:00:00+07:00 
+Open mic for lab-fee 
+and parking 
+questions. 
+evt-04 Canteen promo: Nasi 
+goreng Thursday 
+Campus life Kantin Lt. 1 2026-09-
+17T11:00:00+07:00 
+Until supplies last. 
+evt-05 Career: internships at 
+local startups 
+Career Hall B 2026-09-
+25T10:00:00+07:00 
+CV clinic first 30 
+minutes. 
+evt-06 Futsal: FIT vs Business Sports Lapangan BSD 2026-09-
+20T08:00:00+07:00 
+Meet at lobby 07:15. 
+evt-07 Library research 
+workshop 
+Academic Library training room 2026-09-
+23T14:00:00+07:00 
+IEEE and ACM login, 
+once. 
+evt-08 Past: Orientation 
+recap screening 
+Campus life Student lounge 2026-08-
+20T15:00:00+07:00 
+This event is in the 
+past on purpose. 
+Your list should still 
+show it. 
+4.  The list, one block at a time 
+5.1  Empty list 
+Where: a new file EventList.kt, in the same folder as MainActivity. Kind: File. 
+LazyColumn only builds the rows that are on screen. A Column of eight texts would build all of them. If the list 
+is empty, LazyColumn is not used. The words No events are the empty state. onEventClick receives the id of 
+the tapped row. This function does not build an Intent. 
+// guided by Android Basics codelab: Add a scrollable list. 
+package com.sgu.kampusgo 
+  
+import androidx.compose.foundation.clickable 
+import androidx.compose.foundation.layout.Column 
+import androidx.compose.foundation.layout.fillMaxWidth 
+import androidx.compose.foundation.layout.padding 
+import androidx.compose.foundation.lazy.LazyColumn 
+import androidx.compose.foundation.lazy.items 
+import androidx.compose.material3.Text 
+import androidx.compose.runtime.Composable 
+import androidx.compose.ui.Modifier 
+import androidx.compose.ui.unit.dp 
+  
+@Composable 
+fun EventList( 
+    events: List<Event>, 
+    onEventClick: (String) -> Unit, 
+    modifier: Modifier = Modifier, 
+--- PAGE 3 ---
+Native Mobile Development  ·  Lab 06  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+) { 
+    if (events.isEmpty()) { 
+        Text("No events", modifier = modifier.padding(24.dp)) 
+    } else { 
+        LazyColumn(modifier = modifier) { 
+        } 
+    } 
+} 
+5.2  One row per event 
+Where: inside the LazyColumn braces from 5.1. 
+key = { it.id } tells Compose which row is which when the list redraws. The clickable modifier is on the whole 
+row, not on one Text. The value passed up is event.id, the same id detail will read. The title is shown. 
+Add a Text line each for category, venue, and startsAt. 
+items(events, key = { it.id }) { event -> 
+    Column( 
+        modifier = Modifier 
+            .fillMaxWidth() 
+            .clickable { onEventClick(event.id) } 
+            .padding(16.dp) 
+    ) { 
+        Text(event.title) 
+        Text(…) 
+        Text(…) 
+    } 
+} 
+5.  The detail screen 
+New Kotlin class EventDetailActivity, same folder. getStringExtra("id") may be missing, so the screen shows a 
+sentence instead of crashing. find walks sampleEvents for that id. The description sits in a column that scrolls. 
+evt-01 is the one that proves the scroll. 
+package com.sgu.kampusgo 
+  
+import android.os.Bundle 
+import androidx.activity.ComponentActivity 
+import androidx.activity.compose.setContent 
+import androidx.activity.enableEdgeToEdge 
+import androidx.compose.foundation.layout.Column 
+import androidx.compose.foundation.layout.fillMaxSize 
+import androidx.compose.foundation.layout.padding 
+import androidx.compose.foundation.rememberScrollState 
+import androidx.compose.foundation.verticalScroll 
+import androidx.compose.material3.Text 
+import androidx.compose.ui.Modifier 
+import androidx.compose.ui.unit.dp 
+import com.sgu.kampusgo.ui.theme.KampusGoTheme 
+  
+class EventDetailActivity : ComponentActivity() { 
+    override fun onCreate(savedInstanceState: Bundle?) { 
+        super.onCreate(savedInstanceState) 
+        enableEdgeToEdge() 
+        val id = intent.getStringExtra("id") 
+        val event = sampleEvents.find { it.id == id } 
+        setContent { 
+            KampusGoTheme { 
+                if (event == null) { 
+                    Text( 
+                        text = "No event for this id", 
+                        modifier = Modifier.padding(24.dp), 
+                    ) 
+--- PAGE 4 ---
+Native Mobile Development  ·  Lab 06  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+                } else { 
+                    Column( 
+                        modifier = Modifier 
+                            .fillMaxSize() 
+                            .verticalScroll(rememberScrollState()) 
+                            .padding(24.dp) 
+                    ) { 
+                        Text(…) 
+                        Text(…) 
+                        Text(…) 
+                        Text(…) 
+                        Text( 
+                            text = … , 
+                            modifier = … , 
+                        ) 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+ 
+Add the title, category, venue, and startsAt; plus an additional description with Modifier.padding(top = 
+12.dp) 
+6.  Register the detail screen 
+In AndroidManifest.xml, inside application, after the other activities. Register EventDetailActivity the same 
+way you registered ProfileActivity in Lab 03. MainActivity stays the icon. 
+7.  The launcher shows the list 
+In MainActivity, keep the class, enableEdgeToEdge(), and val activity = this. Replace the Scaffold call with this 
+block. Show empty is the debug switch: the list becomes empty and must show No events. Do not put this 
+LazyColumn inside verticalScroll. The list scrolls by itself. 
+var showEmpty by remember { mutableStateOf(false) } 
+val events = if (showEmpty) emptyList() else sampleEvents 
+Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -> 
+    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) { 
+        EventList( 
+            events = events, 
+            onEventClick = { id -> 
+                val intent = Intent(activity, EventDetailActivity::class.java) 
+                intent.putExtra("id", id) 
+                activity.startActivity(intent) 
+            }, 
+            modifier = Modifier.weight(1f), 
+        ) 
+        Button(onClick = { showEmpty = !showEmpty }) { 
+            Text(if (showEmpty) "Show events" else "Show empty") 
+        } 
+        Button(onClick = { 
+            activity.startActivity(Intent(activity, ProfileXmlActivity::class.java)) 
+        }) { 
+            Text("XML form") 
+        } 
+    } 
+} 
+Add imports Android Studio marks in red. remember and mutableStateOf come back on this screen. getValue 
+and setValue too, if by remember is red. 
+--- PAGE 5 ---
+Native Mobile Development  ·  Lab 06  ·  Swiss German University 
+Student handout  ·  Stay in your KampusGo project 
+8.  Run and submit 
+5. Run. Eight rows appear. evt-08 is on the list. 
+6. Tap the guest lecture. The detail screen shows that title, the room, the time, and the long description. 
+Scroll until the last sentence is visible. 
+7. Back returns to the list. Tap Show empty. The screen says No events and does not crash. Tap Show events. 
+8. When that works, commit and push. Tag lab-a2 and push the tag. On LMS, submit the repo URL. Due at 
+the start of Lab 07. 
+9.  If something breaks 
+Problem What to try 
+Tap does nothing clickable is on the Column of the row, and onEventClick 
+receives event.id. 
+Detail always says no event putExtra and getStringExtra both use the name id. The id 
+exists in sampleEvents. 
+List crashes inside a scroll Remove verticalScroll from around the LazyColumn. The 
+list is already a scroller. 
+Only one row, or a Column of eight The rows are inside LazyColumn { items(...) }. key uses 
+it.id. 
+10.  Desk check 
+• LazyColumn, with key = { it.id }. Not eight Texts in one Column. 
+• The opened detail matches the row. Title, category, venue, time, and the full description. 
+• evt-01 scrolls. Show empty shows No events. 
+• The tag lab-a2 points at this list, and the codelab comment is on Events.kt or EventList.kt. 
